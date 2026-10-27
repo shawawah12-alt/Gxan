@@ -288,4 +288,3 @@ jobs:
         with:
           path: C:\VaultCache
           key: win-vault-${{ github.repository }}-${{ github.run_id }}-${{ matrix.shard }}
-```!]
